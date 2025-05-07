@@ -1,0 +1,93 @@
+.home {
+  padding: 2rem;
+
+  &__heading,
+  &__loading,
+  &__subheading {
+    text-align: center;
+    background-color: black;
+    color: #fff;
+    padding: 20px;
+  }
+
+  &__festival-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  &__cities {
+    margin-top: 4rem;
+  }
+
+  &__city-buttons {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    margin-bottom: 3rem;
+    margin-top: 3rem;
+    flex-wrap: wrap;
+  }
+
+  &__city-button {
+    padding: 1rem 1.5rem;
+    background-color: white;
+    color: black;
+    font-weight: bold;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+
+    &.active {
+      background-color: #cc2e8f;
+      color: #fff;
+    }
+  }
+
+  &__city-title {
+    margin-bottom: 2rem;
+  }
+
+  &__event-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+}
+.scrolling-text-container {
+  overflow: hidden;
+  width: 100%;
+  background-color: transparent;
+  padding: 1rem 0;
+  background-color: black;
+}
+
+.scrolling-text-track {
+  display: inline-block;
+  white-space: nowrap;
+  animation: scroll-left 40s linear infinite;
+}
+
+.scrolling-text-track span {
+  display: inline-block;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #fff;
+  padding-right: 3rem; // mellomrom mellom kopiene
+}
+  
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scrolling-text-track {
+    animation: none;
+    transform: translateX(0);
+  }
+}

@@ -1,0 +1,57 @@
+.category-page {
+    padding: 2rem;
+  
+    h1 {
+      text-transform: capitalize;
+      font-size: 3rem;
+      text-align: center;
+      background-color: #cc2e8f ;
+      color: white;
+    }
+  
+    section {
+      margin-top: 2rem;
+    }
+  
+    .filters {
+      &__inputs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        input,
+        select {
+          padding: 1rem;
+        }
+      }
+  
+      &__search {
+        padding: 1rem;
+        width: 400px;
+        margin-bottom: 2rem;
+        font-size: 1.2rem;
+      }
+    }
+  
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    } 
+  }
+
+  
+  
+  // Responsivt (kan tilpasses mer hvis ønsket)
+@media (min-width: 768px) {
+    .category {
+      &__filters-group {
+        justify-content: flex-start;
+      }
+  
+      &__filters-search {
+        margin-bottom: 0;
+      }
+    }
+  }
+  
