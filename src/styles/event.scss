@@ -6,35 +6,37 @@
       margin-bottom: 2rem;
       background-color: #cc2e8f;
       color: white;
-      padding: 30px;
+      padding: 2rem;
+      font-size: 2.5rem;
     }
+  
     p {
-        font-size: 1.5rem;
+      font-size: 1.25rem;
     }
   
     &__image {
+      border-radius: 1.5rem;
       max-width: 100%;
-      border-radius: 40px;
-      margin-bottom: 1rem;
+      height: auto;
+      margin: 0 auto 1rem auto;
       display: block;
-      margin-left: auto;
-      margin-right: auto;
     }
   
     &__loading,
     &__error {
       padding: 2rem;
       text-align: center;
+      font-size: 1.25rem;
     }
   
     &__social {
-      margin-top: 0.5rem;
+      margin: 1rem 0;
   
       &-link {
         margin-right: 1rem;
         color: #007bff;
         text-decoration: none;
-        font-size: 1.5rem;
+        font-size: 1.25rem;
   
         &:hover {
           text-decoration: underline;
@@ -53,9 +55,41 @@
       margin-top: 1rem;
   
       &--artists {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       }
     }
-      
+  
+    // Media query korrekt NESTET inni .event
+    @media (min-width: 768px) {
+      padding: 2rem;
+  
+      &__title {
+        font-size: 2rem;
+        padding: 30px;
+      }
+  
+      p {
+        font-size: 1.2rem;
+      }
+  
+      &__image {
+        max-width: 800px;
+        border-radius: 40px;
+      }
+  
+      &__social-link {
+        font-size: 1.5rem;
+        margin-right: 1rem;
+      }
+  
+      &__grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 3rem;
+  
+        &--artists {
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+      }
+    }
   }
   

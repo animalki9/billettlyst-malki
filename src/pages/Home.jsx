@@ -1,24 +1,15 @@
-// Import av nødvendige hooks og komponenter
 import { Link } from 'react-router-dom'
 import CityEventCard from '../components/CityEventCard'
 import '../styles/home.scss'
 import '../styles/cards.scss'
-import { useEffect, useState, useRef } from 'react'
-
+import { useEffect, useState } from 'react'
 
 export default function Home() {
-  // Tilstand for festivaldata, innlastingsstatus, arrangementer per by og valgt by
   const [festivals, setFestivals] = useState([])
   const [loading, setLoading] = useState(true)
   const [cityEvents, setCityEvents] = useState([])
   const [selectedCity, setSelectedCity] = useState('Oslo')
-  const fullText = 'Sommerens festivaler!'
-  const [heading, setHeading] = useState('')
-  const [doneTyping, setDoneTyping] = useState(false)
-  const indexRef = useRef(0) // Brukes for å holde riktig index mellom renders
 
-
-  // Henter forhåndsdefinerte festivaler ved førstegangsinnlasting
   useEffect(() => {
     const fetchFestivals = async () => {
       const urls = [
@@ -29,7 +20,6 @@ export default function Home() {
       ]
 
       try {
-        // Henter data parallelt fra alle festival-URL-er og filtrerer bort null-verdier
         const results = await Promise.all(
           urls.map(async (url) => {
             const res = await fetch(url)
@@ -38,9 +28,8 @@ export default function Home() {
           })
         )
         setFestivals(results.filter(Boolean))
-      } catch (error) {
-        console.error('Feil ved henting av festivaler:', error)
-      } finally {
+      } catch {}
+      finally {
         setLoading(false)
       }
     }
@@ -48,12 +37,10 @@ export default function Home() {
     fetchFestivals()
   }, [])
 
-  // Henter arrangementer når valgt by endres
   useEffect(() => {
     fetchCityEvents(selectedCity)
   }, [selectedCity])
 
-  // Henter arrangementer fra valgt by ved hjelp av Ticketmaster API
   const fetchCityEvents = async (city) => {
     try {
       const response = await fetch(
@@ -61,34 +48,23 @@ export default function Home() {
       )
       const data = await response.json()
       setCityEvents(data._embedded?.events || [])
-    } catch (error) {
-      console.error('Feil ved henting av by-arrangementer:', error)
-    }
+    } catch {}
   }
 
   return (
     <main className="home">
-      {/* Overskrift for festivalsesongen */}
-
       <div className="scrolling-text-container">
         <div className="scrolling-text-track">
-          <span>Sommerens festivaler! </span>
-          <span>Sommerens festivaler! </span>
-          <span>Sommerens festivaler! </span>
-          <span>Sommerens festivaler! </span>
-          <span>Sommerens festivaler! </span>
-          <span>Sommerens festivaler! </span>
-          <span>Sommerens festivaler! </span>
-
+          {Array(7).fill('Sommerens festivaler!').map((text, idx) => (
+            <span key={idx}>{text} </span>
+          ))}
         </div>
       </div>
 
-      {/* Viser lastestatus før festivaldata er hentet */}
       {loading ? (
         <p className="home__loading">Laster festivaler…</p>
       ) : (
         <div className="home__festival-grid">
-          {/* Mapper festivaldata til visuelle kort */}
           {festivals.map((festival) => (
             <article key={festival.id} className="festival-card">
               {festival.images?.[0]?.url && (
@@ -107,11 +83,9 @@ export default function Home() {
         </div>
       )}
 
-      {/* Seksjon for arrangementer i utvalgte storbyer */}
       <section className="home__cities">
         <h1 className="home__subheading">Hva skjer i verdens storbyer!</h1>
 
-        {/* Byvalg-knapper, oppdaterer valgt by */}
         <div className="home__city-buttons">
           {['Oslo', 'Stockholm', 'Berlin', 'London', 'Paris'].map((city) => (
             <button
@@ -124,10 +98,8 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Overskrift for valgt by */}
         <h2 className="home__city-title">Hva skjer i {selectedCity}</h2>
 
-        {/* Arrangementskort for valgt by */}
         <div className="home__event-grid">
           {cityEvents.map((event) => (
             <CityEventCard key={event.id} event={event} />
