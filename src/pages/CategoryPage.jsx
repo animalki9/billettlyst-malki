@@ -32,7 +32,7 @@ export default function CategoryPage() {
 
   // Oversetter URL-slug til keyword som passer Ticketmaster API
   // Brukes for å oversette norske URL-kategorier til engelsk keyword som API-et forstår.
-  // KILDE: https://developer.mozilla.org/en-US/docs/Glossary/Slug
+  // Kilde: https://developer.mozilla.org/en-US/docs/Glossary/Slug
   const mapSlugToKeyword = (slug) => {
     switch (slug.toLowerCase()) {
       case 'musikk': return 'music'
@@ -43,7 +43,7 @@ export default function CategoryPage() {
   }
 
   // Henter ønskelister fra localStorage for å beholde favoritter mellom økter
-  // KILDE(litt inspirasjon og ideer): https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
+  //(litt inspirasjon og ideer): https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
 
   useEffect(() => {
     const getMap = (key) => {
@@ -65,7 +65,7 @@ export default function CategoryPage() {
   }, [slug])
 
   // Henter arrangementer, attraksjoner og spillesteder fra Ticketmaster Discovery API
-  // KILDE: https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/  
+  // Kilde: https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/  
   const fetchCategoryData = async () => {
     try {
       const keyword = mapSlugToKeyword(slug)
@@ -104,7 +104,7 @@ export default function CategoryPage() {
 
   // Her legger jeg til ekstra info som dato, by og land til hver attraksjon,
   // ved å hente det fra første event som er knyttet til attraksjonen.
-  // KILDE: Ticketmaster API + vanlig mønster kalt “enrichment” brukt for å gjøre data mer nyttig
+  // Kilde: Ticketmaster API + vanlig mønster kalt “enrichment” brukt for å gjøre data mer nyttig
   // https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/#search-events-v2
   
   const enrichAttractionsWithEventData = async (rawAttractions) => {
@@ -135,7 +135,7 @@ export default function CategoryPage() {
   // Bruker type ('events', 'attractions' eller 'venues') for å vite hvilken liste som skal oppdateres.
   // Kombinerer ønskeliste-elementer og filtrerte elementer, uten duplikater.
   // Ønskelisten vises øverst.
-  // KILDE: Unike verdier fra array med new Set – https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set
+  // Kilde: Unike verdier fra array med new Set – https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set
 
   const toggleWishlist = (item, type) => {
     const config = {

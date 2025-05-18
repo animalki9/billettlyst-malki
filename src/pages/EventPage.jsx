@@ -19,7 +19,7 @@ export default function EventPage() {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        // Henter data for hovedarrangement fra Ticketmaster API
+      // Henter detaljert informasjon om ett event fra Ticketmaster API
         const res = await fetch(
           `https://app.ticketmaster.com/discovery/v2/events/${id}.json?apikey=${import.meta.env.VITE_TICKETMASTER_API_KEY}`
         )
@@ -33,6 +33,7 @@ export default function EventPage() {
             `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${import.meta.env.VITE_TICKETMASTER_API_KEY}&attractionId=${attractionId}&locale=*&countryCode=NO`
           )
           const data2 = await res2.json()
+          // Filtrerer bort eventet selv og eventer merket som test
           const allRelated = (data2._embedded?.events || []).filter(e =>
             e.id !== data.id && !e.test
           )
@@ -47,15 +48,20 @@ export default function EventPage() {
 
     if (id) fetchEvent()
   }, [id])
+
+  // Viser lasteskjerm til data er hentet
   if (loading) {
     return <main className="event"><p>Laster inn arrangement...</p></main>
   }
 
+  // Hvis event ikke finnes
   if (!event) {
     return <main className="event"><p>Fant ikke arrangementet.</p></main>
   }
 
   // Forbereder variabler for visning
+  // Bruker optional chaining for trygg tilgang: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining
+
   const imageUrl = event.images?.[0]?.url
   const genres = event.classifications?.[0]
   const allGenres = [genres?.segment?.name, genres?.genre?.name, genres?.subGenre?.name]
@@ -66,28 +72,31 @@ export default function EventPage() {
   const venue = event._embedded?.venues?.[0]
   const date = event.dates?.start?.localDate
   const time = event.dates?.start?.localTime
+
+  // Søker etter festivalpass i relaterte eventer
   const festivalPasses = relatedEvents.filter(e =>
     e.name.toLowerCase().includes('pass')
   )
+  // Henter eksterne lenker til sosiale medier
   const attraction = event._embedded?.attractions?.[0]
   const externalLinks = attraction?.externalLinks || {}
   const facebookLink = externalLinks.facebook?.[0]?.url
   const instagramLink = externalLinks.instagram?.[0]?.url
 
-  
-
   // JSX for visning av arrangementinformasjon og relaterte elementer
   return (
-    
     <main className="event">
       <h1 className="event__title">{event.name}</h1>
 
+      {/* Viser hovedbilde om tilgjengelig */}
       {imageUrl && (
         <img src={imageUrl} alt={event.name} className="event__image" />
       )}
 
+      {/* Sjanger-informasjon */}
       <p><strong>Sjanger:</strong> {allGenres.length > 0 ? allGenres.join(', ') : 'Ukjent'}</p>
-
+      
+      {/* Lenker til sosiale medier */}
       {(facebookLink || instagramLink) && (
         <div className="event__social">
           <p><strong>Følg oss på sosiale medier:</strong></p>
@@ -104,14 +113,17 @@ export default function EventPage() {
         </div>
       )}
 
+      {/* Tid og sted */}
       <p><strong>Dato:</strong> {date} {time}</p>
       <p><strong>Sted:</strong> {venue?.name} ({venue?.city?.name}, {venue?.country?.name})</p>
       <p><strong>Tidssone:</strong> {timezone}</p>
 
+      {/* Status */}
       {status && (
         <p><strong>Status:</strong> {status === 'onsale' ? 'Billetter tilgjengelig' : 'Ikke i salg'}</p>
       )}
 
+      {/* Billettlenke */}
       {ticketUrl && (
         <p>
           <a href={ticketUrl} target="_blank" rel="noopener noreferrer" className="event__ticket-link">
@@ -120,7 +132,7 @@ export default function EventPage() {
         </p>
       )}
 
-      {/* Festivalpass-seksjon */}
+      {/* Festivalpass seksjon */}
       <section className="event__section">
         <h2>Festivalpass:</h2>
         {festivalPasses.length > 0 ? (
@@ -134,7 +146,7 @@ export default function EventPage() {
         )}
       </section>
       
-      {/* Artistseksjon */}
+      {/* Artist seksjon */}
       {event._embedded?.attractions?.length > 0 && (
         <section className="event__section">
           <h2>Artister:</h2>

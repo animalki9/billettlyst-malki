@@ -72,7 +72,7 @@ export default function Home() {
           {Array(7).fill('Sommerens festivaler!').map((text, idx) => (
             <span key={idx}>{text} </span>
           ))}
-          {/* KILDE: Skrollende tekst inspirert av CSS Tricks – https://css-tricks.com/infinite-all-css-scrolling-slideshow/ */}
+          {/* Skrollende tekst inspirert av CSS Tricks – https://css-tricks.com/infinite-all-css-scrolling-slideshow/ */}
         </div>
       </div>
 
@@ -133,7 +133,7 @@ export default function Home() {
             />
           ))}
           {/* Bruk av props for å styre visning av hjerteikon og handlingsknapper i gjenbrukt komponent.
-            KILDE: React – Passing props to a component
+            Kilde: React – Passing props to a component
             https://react.dev/learn/passing-props-to-a-component */}
         </div>
       </section>

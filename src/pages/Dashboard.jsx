@@ -4,7 +4,7 @@ import '../styles/dashboard.scss'
 
 export default function Dashboard() {
   // Initialiserer innloggingsstatus og brukernavn fra localStorage
-  // KILDE: https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
+  // Kilde: https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
   const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem('isLoggedIn') === 'true')
   const [username, setUsername] = useState(() => localStorage.getItem('username') || '')
   const [user, setUser] = useState(null)
