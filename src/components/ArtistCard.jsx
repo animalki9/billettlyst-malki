@@ -6,7 +6,8 @@ import '../styles/cards.scss'
 // - artist: objekt med artistdata fra Ticketmaster
 // - onToggle: funksjon for å legge til/fjerne fra ønskeliste
 // - isWished: boolean som indikerer om artisten er ønsket
-export default function ArtistCard({ artist, onToggle, isWished }) {
+// - showHeart: boolean for å vise/skjule hjerte-knappen
+export default function ArtistCard({ artist, onToggle, isWished, showHeart = true }) {
   // Bruker fallback-bilde dersom ingen bilde er tilgjengelig
   const imageUrl = artist.images?.[0]?.url || '/fallback-artist.jpg'
 
@@ -27,16 +28,19 @@ export default function ArtistCard({ artist, onToggle, isWished }) {
       <h3 className="artist-card__title">{name}</h3>
       {genre && <p className="artist-card__genre">{genre}</p>}
 
-      {/* Hjerte-knapp for å legge til eller fjerne fra ønskeliste */}
-      <button
-        onClick={() => onToggle(artist.id)}
-        className={`wishlist-button ${isWished ? 'active' : ''}`}
-      >
-        {isWished ? '❤️' : '🤍'}
-      </button>
+      {/* Betinget rendering av hjerte-knapp basert på showHeart-prop */}
+      {showHeart && (
+        <button
+          onClick={() => onToggle(artist.id)}
+          className={`wishlist-button ${isWished ? 'active' : ''}`}
+        >
+          {isWished ? '❤️' : '🤍'}
+        </button>
+      )}
     </article>
   )
 }
+
 // --- KILDER / INSPIRASJON ---
 
 // React – Props og betinget rendering av elementer:
@@ -48,4 +52,3 @@ export default function ArtistCard({ artist, onToggle, isWished }) {
 
 // Bruk av fallback-bilder i React:
 // https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement
-

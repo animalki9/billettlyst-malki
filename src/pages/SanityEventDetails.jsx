@@ -1,21 +1,27 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { sanity } from '../sanityClient'
-import '../styles/dashboard.scss'
+import { useParams } from 'react-router-dom' 
+import { sanity } from '../sanityClient' 
+import '../styles/dashboard.scss' 
 
+// Komponent for å vise detaljer om et event lagret i Sanity
 export default function SanityEventDetails() {
+  // Henter event-id fra URL-parametere
   const { id } = useParams()
 
+  // Tilstander for Sanity-event, Ticketmaster-event, brukerliste og lastestatus
   const [sanityEvent, setSanityEvent] = useState(null)
   const [ticketmasterEvent, setTicketmasterEvent] = useState(null)
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
 
+  // useEffect kjører når id endres, starter innhenting av data
   useEffect(() => {
     fetchSanityEvent()
   }, [id])
 
-  const fetchSanityEvent = async () => {
+  // Henter eventdata fra Sanity basert på apiId
+  // Sanity GROQ: https://www.sanity.io/docs/query-cheat-sheet
+    const fetchSanityEvent = async () => {
     try {
       const eventData = await sanity.fetch(
         `*[_type == "event" && apiId == $id][0]{
@@ -27,6 +33,7 @@ export default function SanityEventDetails() {
       )
       setSanityEvent(eventData)
 
+      // Hvis event finnes og har Ticketmaster-id så hent detaljert info
       if (eventData?.apiId) {
         fetchTicketmasterEvent(eventData.apiId)
         fetchUsers(eventData._id)
@@ -36,6 +43,9 @@ export default function SanityEventDetails() {
     }
   }
 
+  // Henter detaljer fra Ticketmaster Discovery API
+  // Kilde: https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/
+
   const fetchTicketmasterEvent = async (apiId) => {
     try {
       const res = await fetch(`https://app.ticketmaster.com/discovery/v2/events/${apiId}.json?apikey=${import.meta.env.VITE_TICKETMASTER_API_KEY}`)
@@ -44,6 +54,7 @@ export default function SanityEventDetails() {
     } catch {}
   }
 
+  // Henter alle brukere fra Sanity og filtrerer hvem som har eventet i ønskeliste/kjøp
   const fetchUsers = async (eventSanityId) => {
     try {
       const userData = await sanity.fetch(
@@ -65,15 +76,14 @@ export default function SanityEventDetails() {
     } catch {}
   }
 
-  if (loading) return <p className="dashboard__loading">Laster data...</p>
-  if (!sanityEvent) return <p className="dashboard__error">Event ikke funnet.</p>
-
+  // Viser detaljer om event og brukere
   return (
     <main className="dashboard-event" style={{ flex: 1 }}>
       <header>
         <h1 className="dashboard-event__title">{sanityEvent.title}</h1>
       </header>
 
+      {/* Dato og sted fra Ticketmaster */}
       {ticketmasterEvent && (
         <section className="dashboard-event__section" aria-labelledby="dato-sted">
           <h2 id="dato-sted">Dato og sted</h2>
@@ -82,6 +92,7 @@ export default function SanityEventDetails() {
         </section>
       )}
 
+      {/* Sjanger (hvis definert) */}
       {ticketmasterEvent?.classifications?.[0]?.genre?.name && (
         <section className="dashboard-event__section" aria-labelledby="sjanger">
           <h2 id="sjanger">Sjanger</h2>
@@ -89,6 +100,7 @@ export default function SanityEventDetails() {
         </section>
       )}
 
+      {/* Brukere som har dette eventet i ønskeliste eller kjøp */}
       <section className="dashboard-event__section" aria-labelledby="brukere">
         <h2 id="brukere">Hvem har dette i ønskeliste</h2>
 

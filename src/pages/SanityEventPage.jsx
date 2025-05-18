@@ -1,6 +1,3 @@
-// Sidekomponent i Next.js for å vise detaljer om et Sanity-event basert på _id
-// Bruker client-side fetch og dynamisk rutehåndtering
-
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { sanity } from '../../sanityClient'
@@ -8,19 +5,19 @@ import '../styles/dashboard.scss'
 
 
 export default function TestSanityEvent() {
-  // Henter query-parametere fra URL (eks. /sanity-event/abc123 gir query.id = "abc123")
+  // Henter query-parametere fra URL
   const { query } = useRouter()
 
-  // Tilstand for event-objektet som hentes fra Sanity
+  // Tilstand for event objektet som hentes fra Sanity
   const [event, setEvent] = useState(null)
   const [error, setError] = useState(null)
 
   // useEffect kjører når query.id blir tilgjengelig
-  // Henter dokumentet fra Sanity der _id matcher query.id
+  // Sanity GROQ: https://www.sanity.io/docs/query-cheat-sheet
   useEffect(() => {
     if (query.id) {
       sanity
-        .fetch(`*[_id == $id][0]`, { $id: query.id }) // Sanity GROQ-spørring
+        .fetch(`*[_id == $id][0]`, { $id: query.id })
         .then((data) => {
           if (data) {
             setEvent(data)
@@ -41,27 +38,20 @@ export default function TestSanityEvent() {
     )
   }
 
-  // Viser lastemelding hvis data ikke er hentet enda
-  if (!event) {
-    return (
-      <main style={{ padding: '2rem' }}>
-        <p>Laster event...</p>
-      </main>
-    )
-  }
-
-  // Returnerer visning av Sanity-data når eventet er lastet inn
+  // Viser eventinformasjon fra Sanity når de blir hentet
   return (
     <main style={{ padding: '2rem' }}>
       <header>
-        <h1 style={color= 'red'}>{event.title}</h1>
+        <h1>{event.title}</h1>
       </header>
 
+      {/* Viser Ticketmaster API ID fra Sanity */}
       <section aria-labelledby="event-apiid">
         <h2 id="event-apiid">API ID</h2>
         <p>{event.apiId}</p>
       </section>
 
+      {/* Viser kategori hvis definert */}
       <section aria-labelledby="event-kategori">
         <h2 id="event-kategori">Kategori</h2>
         <p>{event.kategori}</p>
@@ -69,15 +59,3 @@ export default function TestSanityEvent() {
     </main>
   )
 }
-
-// --- KILDER / INSPIRASJON ---
-
-// Next.js - useRouter (for å hente ruteparametere):
-// https://nextjs.org/docs/pages/api-reference/functions/use-router
-
-// React Hooks: useEffect og useState:
-// https://reactjs.org/docs/hooks-reference.html
-
-// Sanity.io - GROQ-spørring og klientoppsett:
-// https://www.sanity.io/docs/how-queries-work
-// https://www.sanity.io/docs/query-cheat-sheet

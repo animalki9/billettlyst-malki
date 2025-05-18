@@ -14,7 +14,7 @@ body {
   font-family: 'Arial', sans-serif;
   margin: 0;
   padding: 0;
-  background: hsl(286, 59%, 88%);
+  background: #e2d6f6;
   color: black;
 }
 
@@ -69,8 +69,7 @@ body {
     margin-top: 0.5rem;
   }
 
-  // Desktop-visning
-  @media (min-width: 600px) {
+  @media (min-width: 768px) {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;

@@ -1,10 +1,10 @@
 // Importerer nødvendige React hooks og komponenter for siden
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import AttractionCard from '../components/AttractionCard'
 import VenueCard from '../components/VenueCard'
-import ArrangementCard from '../components/ArrangementCard'
-import '../styles/category.scss' // CSS for utseendet til siden
+import EventCard from '../components/EventCard'
+import '../styles/category.scss'
+
 
 export default function CategoryPage() {
   // Henter slug fra URL (for eksempel "musikk" eller "sport")
@@ -16,21 +16,23 @@ export default function CategoryPage() {
   const [selectedCity, setSelectedCity] = useState('') // Filtrering etter by
   const [selectedDate, setSelectedDate] = useState('') // Filtrering etter dato
 
-  // Rådata for tre ulike kategorier fra API
-  const [events, setEvents] = useState([]) // Arrangementer
-  const [attractions, setAttractions] = useState([]) // Artister/personer
-  const [venues, setVenues] = useState([]) // Spillesteder
+  // Data for events, attraksjoner og spillesteder
+  const [events, setEvents] = useState([])
+  const [attractions, setAttractions] = useState([]) 
+  const [venues, setVenues] = useState([])
 
-  // Unike alternativer for land og by brukt i dropdown-filtre
+  // Filtreringsvalg hentet fra event-data
   const [countries, setCountries] = useState([])
   const [cities, setCities] = useState([])
 
-  // Brukerens ønskelister – lokal lagring av favoritter
+  // Ønskelister lagret lokalt (localStorage)
   const [eventWishlist, setEventWishlist] = useState({})
   const [attractionWishlist, setAttractionWishlist] = useState({})
   const [venueWishlist, setVenueWishlist] = useState({})
 
-  // Konverterer norsk kategori til engelsk keyword for API-søk
+  // Oversetter URL-slug til keyword som passer Ticketmaster API
+  // Brukes for å oversette norske URL-kategorier til engelsk keyword som API-et forstår.
+  // KILDE: https://developer.mozilla.org/en-US/docs/Glossary/Slug
   const mapSlugToKeyword = (slug) => {
     switch (slug.toLowerCase()) {
       case 'musikk': return 'music'
@@ -40,7 +42,9 @@ export default function CategoryPage() {
     }
   }
 
-  // Henter ønskelister fra localStorage (bevarer favoritter mellom økter)
+  // Henter ønskelister fra localStorage for å beholde favoritter mellom økter
+  // KILDE(litt inspirasjon og ideer): https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
+
   useEffect(() => {
     const getMap = (key) => {
       try {
@@ -55,75 +59,102 @@ export default function CategoryPage() {
     setVenueWishlist(getMap('wishlist_venues'))
   }, [slug])
 
-  // Henter data når komponenten rendres første gang eller slug endres
+  // Henter ny data hver gang slug (kategori) endres
   useEffect(() => {
     fetchCategoryData()
   }, [slug])
 
-  // Henter alle tre datatyper fra Ticketmaster API
+  // Henter arrangementer, attraksjoner og spillesteder fra Ticketmaster Discovery API
+  // KILDE: https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/  
   const fetchCategoryData = async () => {
     try {
       const keyword = mapSlugToKeyword(slug)
+      const API_KEY = import.meta.env.VITE_TICKETMASTER_API_KEY
+      const proxy = 'http://localhost:8080/'
+      const baseUrl = 'https://app.ticketmaster.com/discovery/v2'
 
-      // === EVENTS ===
+      // Arrangementer
       const eventRes = await fetch(
-        `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${import.meta.env.VITE_TICKETMASTER_API_KEY}&keyword=${keyword}&size=20`
+        `${proxy}${baseUrl}/events.json?apikey=${API_KEY}&keyword=${keyword}&size=10`
       )
       const eventData = await eventRes.json()
       const fetchedEvents = eventData._embedded?.events || []
       setEvents(fetchedEvents)
 
-      // Ekstraher unike land og byer for filtrering
+      // Henter unike land og byer fra events for bruk i filter
       const foundCountries = fetchedEvents.map(e => e._embedded?.venues?.[0]?.country?.name).filter(Boolean)
       const foundCities = fetchedEvents.map(e => e._embedded?.venues?.[0]?.city?.name).filter(Boolean)
-      setCountries([...new Set(foundCountries)].sort()) // Fjerner duplikater
+      setCountries([...new Set(foundCountries)].sort())
       setCities([...new Set(foundCities)].sort())
 
-      // === ATTRACTIONS ===
+      // Atraksjoner
       const attractionRes = await fetch(
-        `https://app.ticketmaster.com/discovery/v2/attractions.json?apikey=${import.meta.env.VITE_TICKETMASTER_API_KEY}&keyword=${keyword}&size=20`
+        `${proxy}${baseUrl}/attractions.json?apikey=${API_KEY}&keyword=${keyword}&size=10`
       )
       const attractionData = await attractionRes.json()
       const rawAttractions = attractionData._embedded?.attractions || []
-      enrichAttractionsWithEventData(rawAttractions) // Legg til sted og dato
+      enrichAttractionsWithEventData(rawAttractions)
 
-      // === VENUES ===
+      // Venue
       const venueRes = await fetch(
-        `https://app.ticketmaster.com/discovery/v2/venues.json?apikey=${import.meta.env.VITE_TICKETMASTER_API_KEY}&keyword=${keyword}&size=20`
+        `${proxy}${baseUrl}/venues.json?apikey=${API_KEY}&keyword=${keyword}&size=10`
       )
       const venueData = await venueRes.json()
       setVenues(venueData._embedded?.venues || [])
-    } catch (err) {
-      console.error('⚠️ Feil under datainnhenting:', err)
+    } catch {
     }
   }
 
-  // Enricher attraksjoner med event-relatert info som by og dato
+  // Her legger jeg til ekstra info som dato, by og land til hver attraksjon,
+  // ved å hente det fra første event som er knyttet til attraksjonen.
+  // KILDE: Ticketmaster API + vanlig mønster kalt “enrichment” brukt for å gjøre data mer nyttig
+  // https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/#search-events-v2
+  
   const enrichAttractionsWithEventData = async (rawAttractions) => {
-    const enriched = await Promise.all(
-      rawAttractions.map(async (a) => {
-        try {
-          const res = await fetch(
-            `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${import.meta.env.VITE_TICKETMASTER_API_KEY}&attractionId=${a.id}&size=1`
-          )
-          const data = await res.json()
-          const event = data._embedded?.events?.[0]
-          const venue = event?._embedded?.venues?.[0]
-          return {
-            ...a,
-            city: venue?.city?.name || '',
-            country: venue?.country?.name || '',
-            date: event?.dates?.start?.localDate || '',
-          }
-        } catch {
-          return { ...a, city: '', country: '', date: '' }
+    const proxy = 'http://localhost:8080/'
+    const baseUrl = 'https://app.ticketmaster.com/discovery/v2'
+    const API_KEY = import.meta.env.VITE_TICKETMASTER_API_KEY
+  
+    const enriched = []
+  
+    for (const a of rawAttractions) {
+      try {
+        const res = await fetch(
+          `${proxy}${baseUrl}/events.json?apikey=${API_KEY}&attractionId=${a.id}&size=1`
+        )
+        if (res.status === 429) {
+          console.warn('Rate limit nådd, venter 2 sekunder...')
+          await new Promise((r) => setTimeout(r, 2000)) // pause i 2 sekunder
+          continue
         }
-      })
-    )
+  
+        const data = await res.json()
+        const event = data._embedded?.events?.[0]
+        const venue = event?._embedded?.venues?.[0]
+  
+        enriched.push({
+          ...a,
+          city: venue?.city?.name || '',
+          country: venue?.country?.name || '',
+          date: event?.dates?.start?.localDate || '',
+        })
+      } catch (err) {
+        console.error('Feil ved enrich:', err)
+        enriched.push({ ...a, city: '', country: '', date: '' })
+      }
+    }
+  
     setAttractions(enriched)
   }
+  
+
 
   // Legg til/fjern element fra ønskeliste og oppdater localStorage
+  // Bruker type ('events', 'attractions' eller 'venues') for å vite hvilken liste som skal oppdateres.
+  // Kombinerer ønskeliste-elementer og filtrerte elementer, uten duplikater.
+  // Ønskelisten vises øverst.
+  // KILDE: Unike verdier fra array med new Set – https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set
+
   const toggleWishlist = (item, type) => {
     const config = {
       events: [eventWishlist, setEventWishlist, 'wishlist_events'],
@@ -145,8 +176,7 @@ export default function CategoryPage() {
     setList(updated)
   }
 
-  // === FILTERING ===
-  // Arrangementer
+  // Filterer arrangementer basert på søkeord, by, land og dato
   const filteredEvents = events.filter((e) => {
     const matchSearch = e.name.toLowerCase().includes(search.toLowerCase())
     const matchCountry = selectedCountry ? e._embedded?.venues?.[0]?.country?.name === selectedCountry : true
@@ -155,7 +185,7 @@ export default function CategoryPage() {
     return matchSearch && matchCountry && matchCity && matchDate
   })
 
-  // Attraksjoner
+  // Filterer attraksjoner basert på søkeord og enriched data (fra tilknyttet event)
   const filteredAttractions = attractions.filter((a) => {
     const matchSearch = a.name.toLowerCase().includes(search.toLowerCase())
     const matchCountry = selectedCountry ? a.country === selectedCountry : true
@@ -164,7 +194,7 @@ export default function CategoryPage() {
     return matchSearch && matchCountry && matchCity && matchDate
   })
 
-  // Spillesteder
+  // Filterer spillesteder basert på navn, land og by
   const filteredVenues = venues.filter((v) => {
     const matchSearch = v.name.toLowerCase().includes(search.toLowerCase())
     const matchCountry = selectedCountry ? v.country?.name === selectedCountry : true
@@ -172,7 +202,8 @@ export default function CategoryPage() {
     return matchSearch && matchCountry && matchCity
   })
 
-  // Viser by og land i ArrangementCard-komponenten
+  // Brukes i ArrangementCard for å vise by og land til eventet, hvis tilgjengelig.
+
   const renderEventInfo = (event) => {
     const city = event._embedded?.venues?.[0]?.city?.name
     const country = event._embedded?.venues?.[0]?.country?.name
@@ -183,7 +214,7 @@ export default function CategoryPage() {
     <main className="category-page">
       <h1>{slug.replace('-', ' ')}</h1>
 
-      {/* === FILTER- OG SØKESEKSJON === */}
+      {/* FILTER- OG SØKESEKSJON */}
       <section className="filters">
         <h2>Filtrert søk</h2>
         <div className="filters__inputs">
@@ -224,43 +255,58 @@ export default function CategoryPage() {
         />
       </section>
 
-      {/* === ATTRAKSJONER === */}
-      <section>
-        <h2>Attraksjoner</h2>
-        <div className="card-grid">
-          {/* Vis ønskeliste først, deretter filtrerte */}
-          {[...Object.values(attractionWishlist), ...filteredAttractions.filter(a => !attractionWishlist[a.id])]
-            .filter(a => a && a.name && a.images?.[0]?.url)
-            .map((a) => (
-              <AttractionCard
-                key={a.id}
-                attraction={a}
-                onToggle={() => toggleWishlist(a, 'attractions')}
-                isWished={!!attractionWishlist[a.id]}
-              />
-            ))}
-        </div>
-      </section>
+       {/* Attraksjoner */}
+       <section>
+          <h2>Attraksjoner</h2>
+          <div className="card-grid">
+            {[...Object.values(attractionWishlist), ...filteredAttractions.filter(a => !attractionWishlist[a.id])]
+              .filter(a => a && a.name)
+              .map((a) => (
+                <EventCard
+                  key={a.id}
+                  event={{ name: a.name, images: a.images }}
+                  isWished={!!attractionWishlist[a.id]}
+                  onToggle={() => toggleWishlist(a, 'attractions')}
+                  showButtons={false}
+                  showHeart={true}
+                  renderInfo={null}
+                />
+              ))}
+          </div>
+        </section>
 
-      {/* === ARRANGEMENTER === */}
+
+      {/* Arangementer */}
       <section>
         <h2>Arrangementer</h2>
         <div className="card-grid">
           {[...Object.values(eventWishlist), ...filteredEvents.filter(e => !eventWishlist[e.id])]
             .filter(e => e && e.name && e.images?.[0]?.url)
             .map((e) => (
-              <ArrangementCard
+              <EventCard
                 key={e.id}
                 event={e}
-                isWishlisted={!!eventWishlist[e.id]}
-                onToggleWishlist={toggleWishlist}
-                renderInfo={renderEventInfo}
+                isWished={!!eventWishlist[e.id]}
+                onToggle={() => toggleWishlist(e, 'events')}
+                showButtons={false}
+                showHeart={true}
+                renderInfo={() => {
+                  const city = e._embedded?.venues?.[0]?.city?.name
+                  const country = e._embedded?.venues?.[0]?.country?.name
+                  const date = e.dates?.start?.localDate
+                  return (
+                    <p>
+                      {date ? `${date} – ` : ''}
+                      {city && country ? `${city}, ${country}` : city || country || ''}
+                    </p>
+                  )
+                }}
               />
             ))}
         </div>
       </section>
 
-      {/* === SPILLESTEDER === */}
+      {/* Spillsteder */}
       <section>
         <h2>Spillesteder</h2>
         <div className="card-grid">
@@ -279,32 +325,3 @@ export default function CategoryPage() {
     </main>
   )
 }
-// --- KILDER / INSPIRASJON ---
-
-// React Hooks og Routing
-// https://reactjs.org/docs/hooks-reference.html
-// https://reactrouter.com/en/main/hooks/use-params
-
-// localStorage i nettleseren
-// https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
-
-// Fetch API og async/await
-// https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
-// https://javascript.info/async-await
-
-// Ticketmaster Discovery API
-// https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/
-
-// Array-metoder for filtrering og visning
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
-
-// React komponentstruktur og gjenbruk
-// https://reactjs.org/docs/thinking-in-react.html
-// Funksjon som beriker hver attraksjon med by, land og dato ved å hente et relatert event
-// Bruker Promise.all for å håndtere flere async fetch-kall parallelt
-// 📚 Kilder:
-// - Promise.all: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/all
-// - fetch API: https://developer.mozilla.org/en-US/docs/Web/API/fetch
-// - async/await: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/async_function
-// - Ticketmaster Discovery API (attractionId): https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/#search-events-v2

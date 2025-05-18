@@ -1,6 +1,3 @@
-// Header.jsx
-// Komponent for visning av toppnavigasjon med logo, meny og innloggingsstatus
-
 import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import '../styles/layout.scss'
@@ -9,7 +6,9 @@ export default function Header() {
   // Tilstand for å holde styr på om brukeren er logget inn
   const [isLoggedIn, setIsLoggedIn] = useState(false)
 
-  // Ved lasting av komponenten: leser lagret innloggingsstatus fra localStorage
+  // useEffect for å synkronisere innloggingsstatus med localStorage
+  // https://react.dev/learn/synchronizing-with-effects
+  // https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
   useEffect(() => {
     const storedStatus = localStorage.getItem('isLoggedIn') === 'true'
     setIsLoggedIn(storedStatus)
@@ -36,21 +35,3 @@ export default function Header() {
     </header>
   )
 }
-// --- KILDER / INSPIRASJON ---
-
-// React dokumentasjon: useState og useEffect hooks:
-// https://reactjs.org/docs/hooks-state.html
-// https://reactjs.org/docs/hooks-effect.html
-
-// React Router DOM: Link-komponent for navigasjon:
-// https://reactrouter.com/en/main/components/link
-
-// Lagring og henting fra localStorage i nettleseren:
-// https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
-
-// BEM-navngivning (Block-Element-Modifier) brukt i CSS-klassenavn:
-// https://getbem.com/naming/
-
-// Inspirasjon til responsiv header:
-// https://css-tricks.com/snippets/css/a-guide-to-flexbox/
-

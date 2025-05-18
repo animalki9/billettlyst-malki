@@ -1,6 +1,4 @@
-// src/styles/cards.scss
-
-// Felles knapp for ønskeliste
+// Felles ønskeliste-knapp
 .wishlist-button {
     margin-top: 0.5rem;
     background: none;
@@ -14,58 +12,17 @@
     }
   }
   
-  // ArrangementCard / EventCard
-  .event-card {
-    background-color: #fff;
-    border-radius: 8px;
-    padding: 1rem;
-    text-align: center;
-    width: 300px;
-  
-    &__image {
-      width: 300px;
-      height: 200px;
-      object-fit: cover;
-      border-radius: 8px;
-    }
-  
-    &__title {
-      margin-top: 1rem;
-    }
-  
-    &__date,
-    &__location {
-      margin: 0.5rem 0;
-    }
-  }
-  
-  // AttractionCard
-  .attraction-card {
-    text-align: center;
-    padding: 0.5rem;
-    background-color: #fff;
-  
-    &__image {
-      width: 100%;
-      height: 200px;
-      object-fit: cover;
-      border-radius: 8px;
-    }
-  
-    &__title {
-      margin-top: 1rem;
-    }
-  }
-  
   // ArtistCard
   .artist-card {
     background-color: #fff;
     padding: 0.5rem;
     text-align: center;
-    width: 200px;
+    width: 100%;
+    max-width: 220px;
+    margin: 0 auto;
   
     &__image {
-      width: 200px;
+      width: 100%;
       height: 200px;
       object-fit: cover;
       border-radius: 8px;
@@ -79,7 +36,15 @@
       margin: 0.5rem 0;
       color: #555;
     }
+  
+    &:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+      transition: 0.2s ease;
+    }
   }
+  
+  // VenueCard
   .venue-card {
     text-align: center;
     padding: 1rem;
@@ -100,26 +65,15 @@
       margin: 0.5rem 0;
       color: #555;
     }
-  }
   
-  
-  .city-card {
-    background-color: #fff;
-    border-radius: 10px;
-    padding: 1rem;
-    text-align: center;
-  
-    &__image {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-      border-radius: 8px;
-    }
-  
-    h3 {
-      margin-top: 1rem;
+    &:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+      transition: 0.2s ease;
     }
   }
+  
+  // FestivalCard
   .festival-card {
     background-color: #fff;
     border-radius: 10px;
@@ -137,32 +91,41 @@
     }
   
     &__title {
-      flex-grow: 0;
       padding: 1rem 2rem;
-
     }
   
     &__link {
-        margin-top: auto; 
-        padding: 1rem 3rem;
-        background-color: #cc2e8f;
-        color: white;
-        text-decoration: none;
-        border-radius: 5px;
-        margin-bottom: 2rem;
-        display: flex;             
-        justify-content: center;  
-        align-items: center;      
-        height: 40px;            
-        text-align: center;       
-        line-height: 1.4;
+      margin-top: auto;
+      padding: 1rem 3rem;
+      background-color: #cc2e8f;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 40px;
+      line-height: 1.4;
+  
+      &:hover {
+        background-color: #b1267e;
+        transition: background-color 0.2s ease;
       }
+    }
   }
-  .card {
-    background-color: #fff; 
-    padding: 1rem;
+  
+  // EventCard
+  .event-card {
+    background-color: #fff;
+    border-radius: 10px;
     text-align: center;
     position: relative;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 2rem;
+    height: 100%;
   
     &__image {
       width: 100%;
@@ -170,20 +133,58 @@
       object-fit: cover;
       border-radius: 8px;
     }
-  }
-  .event-card__buttons {
-    display: flex;
-    gap: 4rem;
-    justify-content: center;
-    margin-top: 1rem;
+  
+    &__title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin: 0.7rem 0;
+    }
+  
+    &__date,
+    &__location {
+      font-size: 0.9rem;
+      color: #555;
+      margin-bottom: 0.3rem;
+    }
+  
+    &__buttons {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+  
+      .btn {
+        background: #cc2e8f;
+        color: white;
+        padding: 0.7rem 1rem;
+        font-size: 0.9rem;
+        border-radius: 4px;
+        border: none;
+        cursor: not-allowed;
+  
+        &.disabled {
+          opacity: 0.6;
+        }
+      }
+    }
+  
+    &:hover {
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+      transition: 0.2s ease;
+    }
   }
   
-  .btn {
-    background: #cc2e8f;
-    color: white;
-    padding: 0.7rem 1rem;
-    font-size: 0.9rem;
-    border-radius: 4px;
-  }
+  @media (min-width: 768px) {
+    .artist-card,
+    .venue-card {
+      max-width: 250px;
+    }
   
+    .festival-card__image,
+    .event-card__image {
+      height: 240px;
+    }
+  }
   

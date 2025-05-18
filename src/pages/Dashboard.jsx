@@ -3,38 +3,34 @@ import { sanity } from '../sanityClient'
 import '../styles/dashboard.scss'
 
 export default function Dashboard() {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    return localStorage.getItem('isLoggedIn') === 'true'
-  })
-  const [username, setUsername] = useState(() => {
-    return localStorage.getItem('username') || ''
-  })
+  // Initialiserer innloggingsstatus og brukernavn fra localStorage
+  // KILDE: https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
+  const [isLoggedIn, setIsLoggedIn] = useState(() => localStorage.getItem('isLoggedIn') === 'true')
+  const [username, setUsername] = useState(() => localStorage.getItem('username') || '')
   const [user, setUser] = useState(null)
   const [error, setError] = useState(null)
 
+  // useEffect kjører fetch hvis bruker er logget inn
   useEffect(() => {
     if (isLoggedIn && username) {
       fetchDashboardData()
     }
   }, [isLoggedIn, username])
 
+  // Henter all dashboard-data fra Sanity: bruker, venner, wishlist, tidligere kjøp
+  // Sanity GROQ-spørring: https://www.sanity.io/docs/query-cheat-sheet
   const fetchDashboardData = async () => {
     try {
       const userData = await sanity.fetch(
         `*[_type == "user" && name == $username][0]{
-          _id,
-          name,
-          email,
-          dob,
-          gender,
+          _id, name, email, dob, gender,
           "image": profileImage.asset->url,
-          wishlist[]-> { _id, title, apiId },
-          previousPurchases[]-> { _id, title, apiId },
+          wishlist[]-> {_id, title, apiId},
+          previousPurchases[]-> {_id, title, apiId},
           friends[]-> {
-            _id,
-            name,
+            _id, name,
             "image": profileImage.asset->url,
-            wishlist[]-> { _id, title, apiId }
+            wishlist[]-> {_id, title, apiId}
           }
         }`,
         { username }
@@ -51,6 +47,7 @@ export default function Dashboard() {
     }
   }
 
+  // Håndterer innlogging basert på brukernavn
   const handleLogin = async (e) => {
     e.preventDefault()
     if (username.trim()) {
@@ -77,6 +74,7 @@ export default function Dashboard() {
     }
   }
 
+  // Håndterer utlogging
   const handleLogout = () => {
     setIsLoggedIn(false)
     setUsername('')
@@ -85,14 +83,13 @@ export default function Dashboard() {
     localStorage.removeItem('username')
   }
 
+  // Viser innloggingsskjema hvis ikke logget inn
   if (!isLoggedIn) {
     return (
       <main className="dashboard">
         <h1 className="dashboard__heading">Dashboard – Logg inn</h1>
         <form onSubmit={handleLogin} className="dashboard__form">
-          <label htmlFor="username" className="dashboard__label">
-            Skriv brukernavn
-          </label>
+          <label htmlFor="username" className="dashboard__label">Skriv brukernavn</label>
           <input
             id="username"
             value={username}
@@ -107,11 +104,18 @@ export default function Dashboard() {
     )
   }
 
-  if (error) return <p className="dashboard__error">{error}</p>
-  if (!user) return <p className="dashboard__loading">Laster dashboard...</p>
+  // Returner loading hvis brukerdata ikke er lastet ennå
+  if (!user) {
+    return (
+      <main className="dashboard">
+        <p className="dashboard__loading">Laster brukerdata...</p>
+      </main>
+    )
+  }
 
-  // 🔒 Fjerner duplikater i ønskeliste og overlapp med kjøp
-  const purchaseIds = new Set(user.previousPurchases?.map(p => String(p._id)))
+// Fjern duplikater mellom ønskeliste og tidligere kjøp (samme event vises ikke to ganger)
+// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set
+const purchaseIds = new Set(user.previousPurchases?.map(p => String(p._id)))
   const seenWishlistIds = new Set()
   const filteredWishlist = user.wishlist?.filter(w => {
     const id = String(w._id)
@@ -121,6 +125,7 @@ export default function Dashboard() {
     return true
   })
 
+  // Brukerens dashboard med profil, venner, ønskeliste og kjøp
   return (
     <main className="dashboard">
       <h1 className="dashboard__heading">Min side</h1>
@@ -128,7 +133,7 @@ export default function Dashboard() {
 
       <div className="dashboard__wrapper">
         <div className="dashboard__layout">
-          {/* VENSTRE: Profil */}
+          {/* Til venstre: brukeren profil */}
           <section className="dashboard__profile">
             <h2>{user.name}</h2>
             {user.image && (
@@ -143,8 +148,9 @@ export default function Dashboard() {
             <p>{user.gender}</p>
           </section>
 
-          {/* HØYRE: Venner, ønskeliste og kjøp */}
+          {/* Til høyre: Venner, ønskeliste og kjøp */}
           <div className="dashboard__right">
+            {/* Venner */}
             <section className="dashboard__section">
               <h2>Venner</h2>
               {user.friends?.length > 0 ? (
@@ -178,6 +184,7 @@ export default function Dashboard() {
               )}
             </section>
 
+            {/* Ønskeliste */}
             <section className="dashboard__section">
               <h2>Min ønskeliste</h2>
               {filteredWishlist?.length > 0 ? (
@@ -192,6 +199,7 @@ export default function Dashboard() {
               )}
             </section>
 
+            {/* Tidligere kjøp */}
             <section className="dashboard__section">
               <h2>Mine kjøp</h2>
               {user.previousPurchases?.length > 0 ? (
