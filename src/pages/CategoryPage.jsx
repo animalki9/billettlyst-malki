@@ -72,8 +72,9 @@ export default function CategoryPage() {
 
       // Arrangement
       const eventRes = await fetch(
-        `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${import.meta.env.VITE_TICKETMASTER_API_KEY}&keyword=${keyword}&size=20`
+        `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${import.meta.env.VITE_TICKETMASTER_API_KEY}&keyword=${keyword}&size=30`
       )
+      
       const eventData = await eventRes.json()
       const fetchedEvents = eventData._embedded?.events || []
       setEvents(fetchedEvents)
@@ -86,7 +87,7 @@ export default function CategoryPage() {
 
       // Atraksjoner
       const attractionRes = await fetch(
-        `https://app.ticketmaster.com/discovery/v2/attractions.json?apikey=${import.meta.env.VITE_TICKETMASTER_API_KEY}&keyword=${keyword}&size=20`
+        `https://app.ticketmaster.com/discovery/v2/attractions.json?apikey=${import.meta.env.VITE_TICKETMASTER_API_KEY}&keyword=${keyword}&size=30`
       )
       const attractionData = await attractionRes.json()
       const rawAttractions = attractionData._embedded?.attractions || []
@@ -94,7 +95,7 @@ export default function CategoryPage() {
 
       // Venue
       const venueRes = await fetch(
-        `https://app.ticketmaster.com/discovery/v2/venues.json?apikey=${import.meta.env.VITE_TICKETMASTER_API_KEY}&keyword=${keyword}&size=20`
+        `https://app.ticketmaster.com/discovery/v2/venues.json?apikey=${import.meta.env.VITE_TICKETMASTER_API_KEY}&keyword=${keyword}&size=30`
       )
       const venueData = await venueRes.json()
       setVenues(venueData._embedded?.venues || [])
@@ -281,6 +282,7 @@ export default function CategoryPage() {
                       {date ? `${date} – ` : ''}
                       {city && country ? `${city}, ${country}` : city || country || ''}
                     </p>
+
                   )
                 }}
               />
