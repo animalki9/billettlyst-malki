@@ -69,13 +69,10 @@ export default function CategoryPage() {
   const fetchCategoryData = async () => {
     try {
       const keyword = mapSlugToKeyword(slug)
-      const API_KEY = import.meta.env.VITE_TICKETMASTER_API_KEY
-      const proxy = 'http://localhost:8080/'
-      const baseUrl = 'https://app.ticketmaster.com/discovery/v2'
 
-      // Arrangementer
+      // Arrangement
       const eventRes = await fetch(
-        `${proxy}${baseUrl}/events.json?apikey=${API_KEY}&keyword=${keyword}&size=10`
+        `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${import.meta.env.VITE_TICKETMASTER_API_KEY}&keyword=${keyword}&size=20`
       )
       const eventData = await eventRes.json()
       const fetchedEvents = eventData._embedded?.events || []
@@ -89,7 +86,7 @@ export default function CategoryPage() {
 
       // Atraksjoner
       const attractionRes = await fetch(
-        `${proxy}${baseUrl}/attractions.json?apikey=${API_KEY}&keyword=${keyword}&size=10`
+        `https://app.ticketmaster.com/discovery/v2/attractions.json?apikey=${import.meta.env.VITE_TICKETMASTER_API_KEY}&keyword=${keyword}&size=20`
       )
       const attractionData = await attractionRes.json()
       const rawAttractions = attractionData._embedded?.attractions || []
@@ -97,7 +94,7 @@ export default function CategoryPage() {
 
       // Venue
       const venueRes = await fetch(
-        `${proxy}${baseUrl}/venues.json?apikey=${API_KEY}&keyword=${keyword}&size=10`
+        `https://app.ticketmaster.com/discovery/v2/venues.json?apikey=${import.meta.env.VITE_TICKETMASTER_API_KEY}&keyword=${keyword}&size=20`
       )
       const venueData = await venueRes.json()
       setVenues(venueData._embedded?.venues || [])
@@ -111,43 +108,28 @@ export default function CategoryPage() {
   // https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/#search-events-v2
   
   const enrichAttractionsWithEventData = async (rawAttractions) => {
-    const proxy = 'http://localhost:8080/'
-    const baseUrl = 'https://app.ticketmaster.com/discovery/v2'
-    const API_KEY = import.meta.env.VITE_TICKETMASTER_API_KEY
-  
-    const enriched = []
-  
-    for (const a of rawAttractions) {
-      try {
-        const res = await fetch(
-          `${proxy}${baseUrl}/events.json?apikey=${API_KEY}&attractionId=${a.id}&size=1`
-        )
-        if (res.status === 429) {
-          console.warn('Rate limit nådd, venter 2 sekunder...')
-          await new Promise((r) => setTimeout(r, 2000)) // pause i 2 sekunder
-          continue
+    const enriched = await Promise.all(
+      rawAttractions.map(async (a) => {
+        try {
+          const res = await fetch(
+            `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${import.meta.env.VITE_TICKETMASTER_API_KEY}&attractionId=${a.id}&size=1`
+          )
+          const data = await res.json()
+          const event = data._embedded?.events?.[0]
+          const venue = event?._embedded?.venues?.[0]
+          return {
+            ...a,
+            city: venue?.city?.name || '',
+            country: venue?.country?.name || '',
+            date: event?.dates?.start?.localDate || '',
+          }
+        } catch {
+          return { ...a, city: '', country: '', date: '' }
         }
-  
-        const data = await res.json()
-        const event = data._embedded?.events?.[0]
-        const venue = event?._embedded?.venues?.[0]
-  
-        enriched.push({
-          ...a,
-          city: venue?.city?.name || '',
-          country: venue?.country?.name || '',
-          date: event?.dates?.start?.localDate || '',
-        })
-      } catch (err) {
-        console.error('Feil ved enrich:', err)
-        enriched.push({ ...a, city: '', country: '', date: '' })
-      }
-    }
-  
+      })
+    )
     setAttractions(enriched)
   }
-  
-
 
   // Legg til/fjern element fra ønskeliste og oppdater localStorage
   // Bruker type ('events', 'attractions' eller 'venues') for å vite hvilken liste som skal oppdateres.

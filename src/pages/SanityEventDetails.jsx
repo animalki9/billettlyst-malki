@@ -80,8 +80,15 @@ export default function SanityEventDetails() {
   return (
     <main className="dashboard-event" style={{ flex: 1 }}>
       <header>
-        <h1 className="dashboard-event__title">{sanityEvent.title}</h1>
+        {loading ? (
+          <h1 className="dashboard-event__title">Laster...</h1>
+        ) : sanityEvent ? (
+          <h1 className="dashboard-event__title">{sanityEvent.title}</h1>
+        ) : (
+          <h1 className="dashboard-event__title">Event ikke funnet</h1>
+        )}
       </header>
+
 
       {/* Dato og sted fra Ticketmaster */}
       {ticketmasterEvent && (

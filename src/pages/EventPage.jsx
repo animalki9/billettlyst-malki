@@ -47,6 +47,13 @@ export default function EventPage() {
 
     if (id) fetchEvent()
   }, [id])
+  if (loading) {
+    return <main className="event"><p>Laster inn arrangement...</p></main>
+  }
+
+  if (!event) {
+    return <main className="event"><p>Fant ikke arrangementet.</p></main>
+  }
 
   // Forbereder variabler for visning
   const imageUrl = event.images?.[0]?.url
@@ -67,8 +74,11 @@ export default function EventPage() {
   const facebookLink = externalLinks.facebook?.[0]?.url
   const instagramLink = externalLinks.instagram?.[0]?.url
 
+  
+
   // JSX for visning av arrangementinformasjon og relaterte elementer
   return (
+    
     <main className="event">
       <h1 className="event__title">{event.name}</h1>
 
