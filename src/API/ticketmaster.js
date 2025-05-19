@@ -1,4 +1,3 @@
-// src/API/ticketmaster.js
 import axios from 'axios'
 
 const API_KEY = import.meta.env.VITE_TICKETMASTER_API_KEY
