@@ -5,7 +5,6 @@ import VenueCard from '../components/VenueCard'
 import EventCard from '../components/EventCard'
 import '../styles/category.scss'
 
-
 export default function CategoryPage() {
   // Henter slug fra URL (for eksempel "musikk" eller "sport")
   const { slug } = useParams()
@@ -18,7 +17,7 @@ export default function CategoryPage() {
 
   // Data for events, attraksjoner og spillesteder
   const [events, setEvents] = useState([])
-  const [attractions, setAttractions] = useState([]) 
+  const [attractions, setAttractions] = useState([])
   const [venues, setVenues] = useState([])
 
   // Filtreringsvalg hentet fra event-data
@@ -44,7 +43,6 @@ export default function CategoryPage() {
 
   // Henter ønskelister fra localStorage for å beholde favoritter mellom økter
   //(litt inspirasjon og ideer): https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage
-
   useEffect(() => {
     const getMap = (key) => {
       try {
@@ -59,8 +57,30 @@ export default function CategoryPage() {
     setVenueWishlist(getMap('wishlist_venues'))
   }, [slug])
 
-  // Henter ny data hver gang slug (kategori) endres
+  // Sjekker om data allerede finnes i sessionStorage før vi gjør fetch
+  // Kilde: https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage
   useEffect(() => {
+    const cachedEvents = sessionStorage.getItem(`events_${slug}`)
+    const cachedAttractions = sessionStorage.getItem(`attractions_${slug}`)
+    const cachedVenues = sessionStorage.getItem(`venues_${slug}`)
+
+    if (cachedEvents && cachedAttractions && cachedVenues) {
+      const parsedEvents = JSON.parse(cachedEvents)
+      const parsedAttractions = JSON.parse(cachedAttractions)
+      const parsedVenues = JSON.parse(cachedVenues)
+
+      setEvents(parsedEvents)
+      setAttractions(parsedAttractions)
+      setVenues(parsedVenues)
+
+      // Sett land og by-filtere fra eventene
+      const foundCountries = parsedEvents.map(e => e._embedded?.venues?.[0]?.country?.name).filter(Boolean)
+      const foundCities = parsedEvents.map(e => e._embedded?.venues?.[0]?.city?.name).filter(Boolean)
+      setCountries([...new Set(foundCountries)].sort())
+      setCities([...new Set(foundCities)].sort())
+      return
+    }
+
     fetchCategoryData()
   }, [slug])
 
@@ -70,22 +90,22 @@ export default function CategoryPage() {
     try {
       const keyword = mapSlugToKeyword(slug)
 
-      // Arrangement
+      // Arrangementer
       const eventRes = await fetch(
         `https://app.ticketmaster.com/discovery/v2/events.json?apikey=${import.meta.env.VITE_TICKETMASTER_API_KEY}&keyword=${keyword}&size=30`
       )
-      
       const eventData = await eventRes.json()
       const fetchedEvents = eventData._embedded?.events || []
       setEvents(fetchedEvents)
+      sessionStorage.setItem(`events_${slug}`, JSON.stringify(fetchedEvents))
 
-      // Henter unike land og byer fra events for bruk i filter
+      // Land og by for filtrering
       const foundCountries = fetchedEvents.map(e => e._embedded?.venues?.[0]?.country?.name).filter(Boolean)
       const foundCities = fetchedEvents.map(e => e._embedded?.venues?.[0]?.city?.name).filter(Boolean)
       setCountries([...new Set(foundCountries)].sort())
       setCities([...new Set(foundCities)].sort())
 
-      // Atraksjoner
+      // Attraksjoner
       const attractionRes = await fetch(
         `https://app.ticketmaster.com/discovery/v2/attractions.json?apikey=${import.meta.env.VITE_TICKETMASTER_API_KEY}&keyword=${keyword}&size=30`
       )
@@ -93,13 +113,16 @@ export default function CategoryPage() {
       const rawAttractions = attractionData._embedded?.attractions || []
       enrichAttractionsWithEventData(rawAttractions)
 
-      // Venue
+      // Spillesteder
       const venueRes = await fetch(
         `https://app.ticketmaster.com/discovery/v2/venues.json?apikey=${import.meta.env.VITE_TICKETMASTER_API_KEY}&keyword=${keyword}&size=30`
       )
       const venueData = await venueRes.json()
-      setVenues(venueData._embedded?.venues || [])
-    } catch {
+      const fetchedVenues = venueData._embedded?.venues || []
+      setVenues(fetchedVenues)
+      sessionStorage.setItem(`venues_${slug}`, JSON.stringify(fetchedVenues))
+    } catch (err) {
+      console.error('❌ Feil under henting av kategori-data:', err)
     }
   }
 
@@ -107,7 +130,6 @@ export default function CategoryPage() {
   // ved å hente det fra første event som er knyttet til attraksjonen.
   // Kilde: Ticketmaster API + vanlig mønster kalt “enrichment” brukt for å gjøre data mer nyttig
   // https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/#search-events-v2
-  
   const enrichAttractionsWithEventData = async (rawAttractions) => {
     const enriched = await Promise.all(
       rawAttractions.map(async (a) => {
@@ -130,6 +152,7 @@ export default function CategoryPage() {
       })
     )
     setAttractions(enriched)
+    sessionStorage.setItem(`attractions_${slug}`, JSON.stringify(enriched))
   }
 
   // Legg til/fjern element fra ønskeliste og oppdater localStorage

@@ -1,8 +1,9 @@
-import { Link } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import EventCard from '../components/EventCard'
 import '../styles/home.scss'
 import '../styles/cards.scss'
+
 
 export default function Home() {
   // Tilstand for festivaler og lastestatus
@@ -14,7 +15,16 @@ export default function Home() {
   const [exploreEvents, setExploreEvents] = useState([])
 
   // useEffect som henter festivaler fra Norge basert på forhåndsdefinerte søkeord
+  // Først sjekkes sessionStorage for å unngå unødvendige kall og CORS-feil
+  // Kilde: https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage
   useEffect(() => {
+    const cached = sessionStorage.getItem('festivals')
+    if (cached) {
+      setFestivals(JSON.parse(cached))
+      setLoading(false)
+      return
+    }
+
     const fetchFestivals = async () => {
       const urls = [
         // Hver URL henter ett spesifikt festivalnavn fra Ticketmaster i Norge
@@ -28,19 +38,21 @@ export default function Home() {
         const results = await Promise.all(
           urls.map(async (url) => {
             const res = await fetch(url)
+            if (!res.ok) throw new Error(`Feil ved henting: ${res.status}`)
             const data = await res.json()
             // Henter kun det første eventet fra hver festival-søk for å unngå duplikater og forenkle visningen.
-            // Alternativt kunne man vist flere events per festival, men det ville gitt et mer uoversiktlig grid.            
-            // KILDE: Ticketmaster API-struktur – https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/
             return data._embedded?.events?.[0] || null 
           })
         )
-        // Fjerner alle null-verdier fra arrayen
-        // KILDE: https://stackoverflow.com/a/43182073 (bruk av filter(Boolean))
-        setFestivals(results.filter(Boolean))
-      } catch {} 
-      finally {
-        setLoading(false) // Uansett resultat, avslutt loading
+        // Fjerner null-verdier fra resultatene
+        // Kilde: https://stackoverflow.com/a/43182073
+        const filtered = results.filter(Boolean)
+        setFestivals(filtered)
+        sessionStorage.setItem('festivals', JSON.stringify(filtered))
+      } catch (error) {
+        console.error('❌ Feil under henting av festivaler:', error)
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -55,14 +67,14 @@ export default function Home() {
           `https://app.ticketmaster.com/discovery/v2/events.json?city=${exploreCity}&size=10&apikey=${import.meta.env.VITE_TICKETMASTER_API_KEY}`
         )
         const data = await res.json()
-        setExploreEvents(data._embedded?.events || []) // Lagrer eventene eller tom liste
+        setExploreEvents(data._embedded?.events || [])
       } catch (err) {
-      // Feilhåndtering utelatt her, men kunne vært utvidet for å vise feilmelding til bruker
-        }
+        console.error('❌ Feil under henting av by-arrangementer:', err)
+      }
     }
-  
+
     fetchExploreEvents()
-  }, [exploreCity]) // Kjøres hver gang exploreCity endres
+  }, [exploreCity])
 
   return (
     <main className="home">
@@ -72,7 +84,6 @@ export default function Home() {
           {Array(7).fill('Sommerens festivaler!').map((text, idx) => (
             <span key={idx}>{text} </span>
           ))}
-          {/* Skrollende tekst inspirert av CSS Tricks – https://css-tricks.com/infinite-all-css-scrolling-slideshow/ */}
         </div>
       </div>
 
@@ -112,7 +123,6 @@ export default function Home() {
               key={city}
               onClick={() => setExploreCity(city)}
               className={`home__city-button ${city === exploreCity ? 'active' : ''}`}
-
             >
               {city}
             </button>
@@ -125,16 +135,13 @@ export default function Home() {
         {/* Grid med arrangementer fra valgt by – viser EventCard-komponenter uten interaktivitet */}
         <div className="home__event-grid">
           {exploreEvents.map((event) => (
-            <EventCard 
-            key={event.id} 
-            event={event} 
-            showHeart={false}
-            showButtons={false} 
+            <EventCard
+              key={event.id}
+              event={event}
+              showHeart={false}
+              showButtons={false}
             />
           ))}
-          {/* Bruk av props for å styre visning av hjerteikon og handlingsknapper i gjenbrukt komponent.
-            Kilde: React – Passing props to a component
-            https://react.dev/learn/passing-props-to-a-component */}
         </div>
       </section>
     </main>

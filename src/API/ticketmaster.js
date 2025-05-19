@@ -1,9 +1,16 @@
+// src/API/ticketmaster.js
 import axios from 'axios'
 
 const API_KEY = import.meta.env.VITE_TICKETMASTER_API_KEY
 const BASE_URL = 'https://app.ticketmaster.com/discovery/v2/'
 
+// Henter ett spesifikt arrangement per festivalnavn fra Norge.
+// Bruker sessionStorage for å unngå unødvendige kall og CORS-feil.
+// Kilde: https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/
 export const fetchSpecificFestivals = async () => {
+  const cached = sessionStorage.getItem('specific_festivals')
+  if (cached) return JSON.parse(cached)
+
   const festivalNames = ['Findings', 'Neon', 'Skeikampenfestivalen', 'Tons of Rock']
   const results = []
 
@@ -17,7 +24,6 @@ export const fetchSpecificFestivals = async () => {
           size: 1,
         },
       })
-
       const event = res.data._embedded?.events?.[0]
       if (event) results.push(event)
     } catch (error) {
@@ -25,9 +31,6 @@ export const fetchSpecificFestivals = async () => {
     }
   }
 
+  sessionStorage.setItem('specific_festivals', JSON.stringify(results))
   return results
 }
-// Kilde: Ticketmaster Discovery API v2
-// https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/
-// Denne funksjonen bruker endpointet GET /events.json med parametere som 'keyword', 'countryCode' og 'size'
-// for å hente ett spesifikt arrangement per festivalnavn fra Norge.
