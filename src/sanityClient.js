@@ -1,9 +1,8 @@
-// src/sanityClient.js
 import { createClient } from '@sanity/client'
 
 export const sanity = createClient({
-  projectId: 'quese9pr',   // ← hent fra sanity.config.ts
+  projectId: 'quese9pr',
   dataset: 'production',
-  apiVersion: '2023-01-01',      // eller dagens dato
+  apiVersion: '2023-01-01',   
   useCdn: true,
 })

@@ -27,3 +27,7 @@ export const fetchSpecificFestivals = async () => {
 
   return results
 }
+// Kilde: Ticketmaster Discovery API v2
+// https://developer.ticketmaster.com/products-and-docs/apis/discovery-api/v2/
+// Denne funksjonen bruker endpointet GET /events.json med parametere som 'keyword', 'countryCode' og 'size'
+// for å hente ett spesifikt arrangement per festivalnavn fra Norge.

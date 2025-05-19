@@ -1,4 +1,3 @@
-// /schemas/event.js
 export default {
   name: 'event',
   type: 'document',
