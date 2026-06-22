@@ -1,17 +1,17 @@
 :root {
-  --color-bg: #f6f7fb;
-  --color-surface: #ffffff;
-  --color-surface-muted: #eef3f8;
-  --color-text: #172033;
-  --color-muted: #667085;
-  --color-border: #d9e0ea;
-  --color-primary: #0f766e;
-  --color-primary-dark: #115e59;
-  --color-primary-soft: #d9f3ef;
-  --color-accent: #f59e0b;
-  --color-danger: #dc2626;
-  --shadow-sm: 0 8px 24px rgba(23, 32, 51, 0.08);
-  --shadow-md: 0 18px 45px rgba(23, 32, 51, 0.12);
+  --color-bg: #101211;
+  --color-surface: #181b1a;
+  --color-surface-muted: #222725;
+  --color-text: #f4f7f6;
+  --color-muted: #a4afad;
+  --color-border: #303836;
+  --color-primary: #c0264e;
+  --color-primary-dark: #9f1239;
+  --color-primary-soft: rgba(192, 38, 78, 0.16);
+  --color-accent: #fbbf24;
+  --color-danger: #fb7185;
+  --shadow-sm: 0 12px 28px rgba(0, 0, 0, 0.24);
+  --shadow-md: 0 22px 55px rgba(0, 0, 0, 0.34);
   --radius-sm: 6px;
   --radius-md: 8px;
 }
@@ -37,8 +37,9 @@ body {
   margin: 0;
   padding: 0;
   background:
-    radial-gradient(circle at top left, rgba(15, 118, 110, 0.10), transparent 34rem),
-    linear-gradient(180deg, #fbfcfe 0%, var(--color-bg) 42%);
+    radial-gradient(circle at top left, rgba(192, 38, 78, 0.16), transparent 34rem),
+    radial-gradient(circle at bottom right, rgba(251, 191, 36, 0.08), transparent 30rem),
+    linear-gradient(180deg, #141716 0%, var(--color-bg) 48%);
   color: var(--color-text);
   line-height: 1.5;
 }
@@ -62,8 +63,8 @@ select {
   text-align: center;
   font-size: 0.95rem;
   color: rgba(255, 255, 255, 0.82);
-  background: #111827;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: #0b0d0c;
+  border-top: 1px solid var(--color-border);
 
   a {
     color: #ffffff;
@@ -82,9 +83,9 @@ select {
   align-items: center;
   gap: 1rem;
   padding: 1rem 1.25rem;
-  background-color: rgba(255, 255, 255, 0.92);
+  background-color: rgba(16, 18, 17, 0.88);
   border-bottom: 1px solid var(--color-border);
-  box-shadow: 0 8px 22px rgba(23, 32, 51, 0.06);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
   backdrop-filter: blur(16px);
   text-align: center;
 

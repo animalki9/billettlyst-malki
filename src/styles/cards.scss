@@ -22,8 +22,8 @@
   
     &.active {
       color: var(--color-danger);
-      background: #fff1f2;
-      border-color: #fecdd3;
+      background: rgba(251, 113, 133, 0.14);
+      border-color: rgba(251, 113, 133, 0.45);
     }
   }
   
@@ -128,7 +128,7 @@
       margin-top: auto;
       padding: 0.85rem 1rem;
       background-color: var(--color-primary);
-      color: white;
+      color: #ffffff;
       text-decoration: none;
       border-radius: var(--radius-sm);
       margin: 1.25rem;
@@ -198,7 +198,7 @@
   
       .btn {
         background: var(--color-primary);
-        color: white;
+        color: #ffffff;
         padding: 0.7rem 1rem;
         font-size: 0.9rem;
         border-radius: var(--radius-sm);

@@ -7,7 +7,7 @@
   &__loading,
   &__subheading {
     text-align: center;
-    background-color: #111827;
+    background-color: #0d0f0e;
     color: #fff;
     padding: 1.5rem;
     border-radius: var(--radius-md);
@@ -51,7 +51,7 @@
     border: 1px solid var(--color-border);
     border-radius: 999px;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(23, 32, 51, 0.05);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.20);
     transition: transform 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
 
     &:hover {
@@ -62,7 +62,7 @@
     &.active {
       background-color: var(--color-primary);
       border-color: var(--color-primary);
-      color: #fff;
+      color: #ffffff;
     }
   }
 
@@ -82,7 +82,7 @@
   overflow: hidden;
   width: 100%;
   padding: 0.8rem 0;
-  background-color: #111827;
+  background-color: #0d0f0e;
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
 }
